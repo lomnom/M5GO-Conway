@@ -134,11 +134,14 @@ class Conway:
 
 cogol=Conway()
 
+#glider
 # cogol.grid[0:-1]=True
 # cogol.grid[-1:-1]=True
 # cogol.grid[1:-1]=True
 # cogol.grid[1:0]=True
 # cogol.grid[0:1]=True
+
+#blinker
 cogol.grid[0:0]=True
 cogol.grid[1:0]=True
 cogol.grid[-1:0]=True
@@ -206,7 +209,6 @@ while True:
     if mode==MOVE:
       x+=direction[0]
       y+=direction[1]
-      lcd.clear()
       text("Direction: "+directions[direction])
     elif mode==ZOOM:
       zoom -= 1 if zoom > 1 else 0
@@ -218,11 +220,12 @@ while True:
     elif mode==SET:
       if btnCpressed:
         cogol.oldGrid=cogol.grid.copy()
-        cogol.grid[midSqMX+x:midSqMY+y]=not cogol.grid[midSqMX+x:midSqMY+y]
+        state=cogol.grid[midSqMX+x:midSqMY+y]
+        cogol.grid[midSqMX+x:midSqMY+y]=not state
+        text("State: "+("live" if state else "dead"))
       else:
         x+=direction[0]
         y+=direction[1]
-        lcd.clear()
         text("Direction: "+directions[direction])
   elif btnCpressed:
     if mode==MOVE or mode==SET:
