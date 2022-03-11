@@ -1,6 +1,8 @@
 from m5stack import *
-from math import ceil, floor
 import time
+
+ceil=lambda n: round(n+0.5)
+floor=lambda n: round(n-0.5)
 
 #some constants
 WHITE=0xFFFFFF
