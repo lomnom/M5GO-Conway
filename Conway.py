@@ -61,40 +61,44 @@ class InfGrid: #infinite grid of 2-states
         yield (x,y)
 
 class Conway:
-  sides=[
-    lambda x,y: (x+1,y+1),
-    lambda x,y: (x-1,y-1),
-    lambda x,y: (x+1,y-1),
-    lambda x,y: (x-1,y+1),
-    lambda x,y: (x-1,y),
-    lambda x,y: (x+1,y),
-    lambda x,y: (x,y-1),
-    lambda x,y: (x,y+1)
-  ]
   def __init__(self):
     self.grid=InfGrid()
     self.oldGrid=InfGrid()
-
+  
   def neighbours(self,x,y): #get neighbours of a cell
-    neighbourN=0
-    for side in self.sides:
-      sX,sY=side(x,y)
-      neighbourN+=int(self.grid[sX:sY])
-    return neighbourN
+    return self.grid[x+1:y+1]+self.grid[x:y+1]+self.grid[x-1:y+1]+ \
+           self.grid[x+1:y]+                     self.grid[x-1:y]+ \
+           self.grid[x+1:y-1]+self.grid[x:y-1]+self.grid[x-1:y-1]
   
   def tick(self): #advance the generation
+    del self.oldGrid
     newGrid=InfGrid()
     toTick=set()
-    for x,y in self.grid:
-      for side in self.sides:
-        toTick.add(side(x,y))
-
-    for x,y in toTick: #stimulate every cell that needs to be stimutlated
-      besideN=self.neighbours(x,y)
-      if (besideN==3 or besideN==2) and self.grid[x:y]:
-        newGrid[x:y]=True 
-      elif besideN==3 and not self.grid[x:y]:
-        newGrid[x:y]=True
+    sides=((1,1),(0,1),(-1,1),(1,0),(-1,0),(1,-1),(0,-1),(-1,-1))
+    
+    gridIterator=self.grid.__iter__()
+    iterating=True
+    
+    while iterating:
+      n=0
+      
+      try:
+        while n!=30:
+          xP,yP=next(gridIterator)
+          for xO,yO in sides:
+            toTick.add((xP+xO,yP+yO))
+          toTick.add((xP,yP))
+          n+=1
+      except StopIteration:
+        iterating=False
+        
+      for x,y in toTick: #stimulate every cell that needs to be stimulated
+        besideN=self.neighbours(x,y)
+        if (besideN==3 or besideN==2) and self.grid[x:y]:
+          newGrid[x:y]=True 
+        elif besideN==3 and not self.grid[x:y]:
+          newGrid[x:y]=True
+      toTick=set()
     
     self.oldGrid=self.grid
     self.grid=newGrid
@@ -237,3 +241,4 @@ while True:
       x-= newMidSqMX-midSqMX
       y-= newMidSqMY-midSqMY
       text("zoom: "+str(zoom))
+      
