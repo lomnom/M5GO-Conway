@@ -111,25 +111,24 @@ class Conway:
     rEndX=x+ceil(WIDTH/zoom) #ends of stimulated part of matrix
     rEndY=y+ceil(HEIGHT/zoom)
     
-    if zoom>1:
+    if zoom>1: #fix rect not rendering when size is 1*1
       rect=lcd.rect
     else:
       rect=lambda x,y,w,h,b,color: lcd.pixel(x,y,color)
     
-    renderCache=set()
-    
     for row in range(y,rEndY+1):
-      if row in rawGrid:
-        posY=(row-y)*zoom #y coordinate to sraw squares
-        for item in rawGrid[row]:
+      rowExists=row in rawGrid
+      if rowExists:
+        posY=(row-y)*zoom #y coordinate to draw squares
+        rowSet=rawGrid[row] #cache set
+        for item in rowSet:
           if rEndX>=item>=x:
-            rect((item-x)*zoom,posY,zoom,zoom,border,color) #render item
-            renderCache.add((item,row))
+            rect((item-x)*zoom,posY,zoom,zoom,border,color) #render item if within viewport
       
-      if row in rawOldGrid:
+      if row in rawOldGrid: #remove old filled items
         posY=(row-y)*zoom
-        for item in rawOldGrid[row]:
-          if rEndX>=item >=x and not (item,row) in renderCache:
+        for item in rawOldGrid[row]: 
+          if rEndX>=item>=x and not (rowExists and item in rowSet):
             rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
 
 cogol=Conway()
