@@ -2,6 +2,7 @@ from m5stack import *
 from math import ceil, floor
 import time
 
+#some constants
 WHITE=0xFFFFFF
 GREY=0xAAAAAA
 BLACK=0x000000
@@ -60,7 +61,7 @@ class InfGrid: #infinite grid of 2-states
       for x in self.grid[y]:
         yield (x,y)
 
-class Conway:
+class Conway: #representation of conway's game of life
   def __init__(self):
     self.grid=InfGrid()
     self.oldGrid=InfGrid()
@@ -80,15 +81,15 @@ class Conway:
     iterating=True
     
     while iterating:
-      n=0
+      cells=0
       
-      try:
-        while n!=30:
+      try: #proccess only 30 cells and the cells around, to save ram
+        while cells!=30:
           xP,yP=next(gridIterator)
-          for xO,yO in sides:
+          for xO,yO in sides: #iterate through cells directly around current processing
             toTick.add((xP+xO,yP+yO))
           toTick.add((xP,yP))
-          n+=1
+          cells+=1
       except StopIteration:
         iterating=False
         
@@ -161,7 +162,7 @@ modes=["move","zoom","set","quit"]
 mode=MOVE
 
 zoom=6
-x = -floor((WIDTH/2)/zoom)
+x = -floor((WIDTH/2)/zoom) #center the center of the board
 y = -floor((HEIGHT/2)/zoom)
 
 def text(txt):
@@ -184,7 +185,7 @@ directions={
 text("mode: move")
 
 while True:
-  midSqMX=floor(WIDTH/2/zoom)
+  midSqMX=floor(WIDTH/2/zoom) # difference between x and x of in the middle of screen
   midSqMY=floor(HEIGHT/2/zoom)
   tickstartms=time.ticks_ms()
   
@@ -192,54 +193,54 @@ while True:
   if mode!=SET and not paused:
     cogol.tick()
     
-  if zoom>1:
+  if zoom>1: #render cursor
     lcd.rect(midSqMX*zoom,midSqMY*zoom,zoom,zoom,RED)
   if zoom==1:
     lcd.pixel(midSqMX*zoom,midSqMY*zoom,RED)
   
-  time.sleep_ms(100-(time.ticks_ms()-tickstartms))
+  time.sleep_ms(100-(time.ticks_ms()-tickstartms)) #make every frame 100ms
 
   btnBpressed=btnB.wasPressed()
   btnCpressed=btnC.wasPressed()
   btnApressed=btnA.wasPressed()
   
-  if btnApressed and btnBpressed and btnCpressed:
+  if btnApressed and btnBpressed and btnCpressed: #pause
     paused=not paused
     text("Paused: "+str(paused))
-  elif btnBpressed:
+  elif btnBpressed: #change mode
     mode+=1
     mode=mode%NMODES
     text("Mode: "+modes[mode])
   elif btnApressed and btnCpressed:
-    if mode==MOVE:
+    if mode==MOVE: #toggle fastmove
       fastMove=not fastMove
       text("FastMove: "+str(fastMove))
-    elif mode==SET:
+    elif mode==SET: #toggle cursor cell
       cogol.oldGrid=cogol.grid.copy()
       state=cogol.grid[midSqMX+x:midSqMY+y]
       cogol.grid[midSqMX+x:midSqMY+y]=not state
       text("State: "+("live" if state else "dead"))
   elif btnApressed:
-    if mode==MOVE:
+    if mode==MOVE: #advance cursor
       x+=direction[0] * (1 if not fastMove else ceil(midSqMX*0.75))
       y+=direction[1] * (1 if not fastMove else ceil(midSqMY*0.75))
       text("Direction: "+directions[direction])
-    elif mode==ZOOM:
+    elif mode==ZOOM: #decrease zoom
       zoom -= 1 if zoom > 1 else 0
-      text("zoom: "+str(zoom))
-      newMidSqMX=floor(WIDTH/2/zoom)
+      newMidSqMX=floor(WIDTH/2/zoom) #center what was previusly centered before the zoom
       newMidSqMY=floor(HEIGHT/2/zoom)
       x-= newMidSqMX-midSqMX
       y-= newMidSqMY-midSqMY
-    elif mode==SET:
+      text("zoom: "+str(zoom))
+    elif mode==SET: #advance cursor in set mode
       x+=direction[0]
       y+=direction[1]
       text("Direction: "+directions[direction])
   elif btnCpressed:
-    if mode==MOVE or mode==SET:
+    if mode==MOVE or mode==SET: #change direction
       direction=turn(direction)
       text("Direction: "+directions[direction])
-    elif mode==ZOOM:
+    elif mode==ZOOM: #increase zoom
       zoom+=1
       newMidSqMX=floor(WIDTH/2/zoom)
       newMidSqMY=floor(HEIGHT/2/zoom)
