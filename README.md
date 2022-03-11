@@ -40,6 +40,8 @@ Press button `A` to increase the cell render size by 1px
 ### 'Set' mode
 When in this mode, stimulation is paused  
 Press button `A` and `C` at the same time to toggle the state of the cursor cell  
+- Debug text: `State: {state}`
+
 Press button `C` to turn the cursor direction 90 degrees clockwise  
 - Debug text: `Direction: {cursorDirection}`
 
