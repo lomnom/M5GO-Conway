@@ -171,7 +171,9 @@ def text(txt):
 direction=(0,-1)
 turn=lambda dir: (-dir[1],dir[0])
 paused=False
-  
+
+fastMove=False
+
 directions={
   (0,1): "down",
   (1,0): "right",
@@ -208,10 +210,19 @@ while True:
     mode+=1
     mode=mode%NMODES
     text("Mode: "+modes[mode])
+  elif btnApressed and btnCpressed:
+    if mode==MOVE:
+      fastMove=not fastMove
+      text("FastMove: "+str(fastMove))
+    elif mode==SET:
+      cogol.oldGrid=cogol.grid.copy()
+      state=cogol.grid[midSqMX+x:midSqMY+y]
+      cogol.grid[midSqMX+x:midSqMY+y]=not state
+      text("State: "+("live" if state else "dead"))
   elif btnApressed:
     if mode==MOVE:
-      x+=direction[0]
-      y+=direction[1]
+      x+=direction[0] * (1 if not fastMove else ceil(midSqMX*0.75))
+      y+=direction[1] * (1 if not fastMove else ceil(midSqMY*0.75))
       text("Direction: "+directions[direction])
     elif mode==ZOOM:
       zoom -= 1 if zoom > 1 else 0
@@ -221,15 +232,9 @@ while True:
       x-= newMidSqMX-midSqMX
       y-= newMidSqMY-midSqMY
     elif mode==SET:
-      if btnCpressed:
-        cogol.oldGrid=cogol.grid.copy()
-        state=cogol.grid[midSqMX+x:midSqMY+y]
-        cogol.grid[midSqMX+x:midSqMY+y]=not state
-        text("State: "+("live" if state else "dead"))
-      else:
-        x+=direction[0]
-        y+=direction[1]
-        text("Direction: "+directions[direction])
+      x+=direction[0]
+      y+=direction[1]
+      text("Direction: "+directions[direction])
   elif btnCpressed:
     if mode==MOVE or mode==SET:
       direction=turn(direction)
