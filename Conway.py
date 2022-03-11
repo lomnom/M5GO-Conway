@@ -220,7 +220,7 @@ while True:
       cogol.oldGrid=cogol.grid.copy()
       state=cogol.grid[midSqMX+x:midSqMY+y]
       cogol.grid[midSqMX+x:midSqMY+y]=not state
-      text("State: "+("live" if state else "dead"))
+      text("State: "+("live" if not state else "dead"))
   elif btnApressed:
     if mode==MOVE: #advance cursor
       x+=direction[0] * (1 if not fastMove else ceil(midSqMX*0.75))
