@@ -1,5 +1,4 @@
 from m5stack import *
-import time
 
 ceil=lambda n: round(n+0.5)
 floor=lambda n: round(n-0.5)
@@ -152,8 +151,6 @@ cogol.grid[0:0]=True
 cogol.grid[1:0]=True
 cogol.grid[-1:0]=True
 
-from utime import sleep
-
 MOVE=0
 ZOOM=1
 SET=2
@@ -185,6 +182,8 @@ directions={
 }
 
 text("mode: move")
+
+import utime as time
 
 while True:
   midSqMX=floor(WIDTH/2/zoom) # difference between x and x of in the middle of screen
