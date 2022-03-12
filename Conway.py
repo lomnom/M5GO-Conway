@@ -154,10 +154,34 @@ class Conway: #representation of conway's game of life
           if rEndX>=item>=x and not (rowSet and item in rowSet):
             rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
 
+def cellsIter(file):
+  file=open("/sd/{}.cells".format(file),"r")
+  line=file.readline()
+  while line[0]=="!":
+    line=file.readline()
+  file.seek(file.tell()-len(line))
+  
+  x,y=0,0
+  char=file.read(1)
+  while char:
+    if char=='.':
+      x+=1
+    elif char=='O':
+      x+=1
+      yield (x,y)
+    elif char=='\n':
+      y+=1
+      x=0
+    char=file.read(1)
+
 cogol=Conway()
 
-for x,y in ((-1,0),(0,0),(1,0)):
-  cogol.grid[x:y]=True
+try:
+  for x,y in cellsIter("pattern"):
+    cogol.grid[x:y]=True
+except OSError:
+  for x,y in ((-1,0),(0,0),(1,0)):
+    cogol.grid[x:y]=True
 
 MOVE=0
 ZOOM=1
