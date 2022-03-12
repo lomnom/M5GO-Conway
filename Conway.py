@@ -19,47 +19,42 @@ lcd.clear(BLACK)
 class InfGrid: #infinite grid of 2-states
   def __init__(self,grid=None):
     grid=grid if grid else {}
-    self.grid=grid # dict{int:set{int}}
+    self.rawgrid=grid # dict{int:set{int}}
     
   def __getitem__(self,index): #slice(x,y,None)
     x=index.start
     y=index.stop
-    if y in self.grid:
-      row=self.grid[y]
-      if x in row: #check if x coordinate in set of coordinates for row
-        return True
-      else:
-        return False
+    
+    rowSet=self.rawgrid.get(y)
+    if rowSet:
+      return x in rowSet
     else:
       return False
   
   def __setitem__(self,index,value):
     x=index.start
     y=index.stop
+    rowSet=self.rawgrid.get(y)
     if value:
-      if y in self.grid:
-        rowSet=self.grid[y] #get set of dictated row if already exists
-      else:
-        rowSet=set() #make a new set otherwise
-        self.grid[y]=rowSet
+      if not rowSet:
+        rowSet=set() #make a new set if row doesnt exist
+        self.rawgrid[y]=rowSet
       rowSet.add(x) #add the x coord to the set of x coords for row
     else:
-      if y in self.grid: 
-        rowSet=self.grid[y]
-        if x in rowSet: #remove item from set of coords in row if exists
-          rowSet.remove(x)
-        if len(rowSet)==0: #delete row set if no other coords
-          del self.grid[y]
+      if rowSet: 
+        rowSet.discard(x)
+        if not rowSet: #delete row set if no other coords
+          del self.rawgrid[y]
     
   def copy(self): #copy the infinite grid
     newGrid={}
-    for index in self.grid:
-      newGrid[index]=self.grid[index].copy()
+    for index in self.rawgrid:
+      newGrid[index]=self.rawgrid[index].copy()
     return InfGrid(grid=newGrid)
   
   def __iter__(self): #iterate through every coordinate
-    for y in self.grid:
-      for x in self.grid[y]:
+    for y in self.rawgrid:
+      for x in self.rawgrid[y]:
         yield (x,y)
 
 class Conway: #representation of conway's game of life
@@ -68,9 +63,18 @@ class Conway: #representation of conway's game of life
     self.oldGrid=InfGrid()
   
   def neighbours(self,x,y): #get neighbours of a cell
-    return self.grid[x+1:y+1]+self.grid[x:y+1]+self.grid[x-1:y+1]+ \
-           self.grid[x+1:y]+                     self.grid[x-1:y]+ \
-           self.grid[x+1:y-1]+self.grid[x:y-1]+self.grid[x-1:y-1]
+    n=0
+    rawGrid=self.grid.rawgrid
+    row=rawGrid.get(y+1)
+    if row:
+      n+= (x+1 in row)+(x in row)+(x-1 in row)
+    row=rawGrid.get(y)
+    if row:
+      n+= (x+1 in row)+(x-1 in row)
+    row=rawGrid.get(y-1)
+    if row:
+      n+= (x+1 in row)+(x in row)+(x-1 in row)
+    return n
   
   def tick(self): #advance the generation
     del self.oldGrid
@@ -99,8 +103,8 @@ class Conway: #representation of conway's game of life
   #   border: border color of cell
   #   cleared: color of cells that are cleared on render
   def showGrid(self,x,y,zoom,color=WHITE,border=GREY,cleared=BLACK):
-    rawGrid=self.grid.grid
-    rawOldGrid=self.oldGrid.grid
+    rawGrid=self.grid.rawgrid
+    rawOldGrid=self.oldGrid.rawgrid
     rEndX=x+ceil(WIDTH/zoom) #ends of stimulated part of matrix
     rEndY=y+ceil(HEIGHT/zoom)
     
@@ -110,18 +114,18 @@ class Conway: #representation of conway's game of life
       rect=lambda x,y,w,h,b,color: lcd.pixel(x,y,color)
     
     for row in range(y,rEndY+1):
-      rowExists=row in rawGrid
-      if rowExists:
+      rowSet=rawGrid.get(row)
+      if rowSet:
         posY=(row-y)*zoom #y coordinate to draw squares
-        rowSet=rawGrid[row] #cache set
         for item in rowSet:
           if rEndX>=item>=x:
             rect((item-x)*zoom,posY,zoom,zoom,border,color) #render item if within viewport
       
-      if row in rawOldGrid: #remove old filled items
+      oldRowSet=rawOldGrid.get(row)
+      if oldRowSet: #remove old filled items
         posY=(row-y)*zoom
-        for item in rawOldGrid[row]: 
-          if rEndX>=item>=x and not (rowExists and item in rowSet):
+        for item in oldRowSet: 
+          if rEndX>=item>=x and not (rowSet and item in rowSet):
             rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
 
 cogol=Conway()
