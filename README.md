@@ -1,4 +1,5 @@
-# M5GO-Conway, an implementation of Conway's game of life on the M5GO, with Zoom, Set and Move functions!
+# M5GO-Conway, a fast<sub>[1]</sub> implementation of Conway's game of life on the M5GO, with Zoom, Set and Move functions!
+<sub>[1]</sub>: Fast for the hardware that it runs on
 ## Installation
 Use the python flasher in https://flow.m5stack.com/ to upload the contents of Conway.py to your M5GO
 
