@@ -24,6 +24,19 @@ Press button `B` to cycle through the modes `Move`, `Zoom`, and `Set`
 Press button `A`, `B` and `C` together   
 - Debug text: `Paused: {isPaused}`  
 
+### Extra info text
+Press button `A` and `B` together to toggle extra info text  
+- Extra info at bottom left
+  ```
+  {ms}ms
+  Gen: {generation}
+  X{xCoord} Y{yCoord}
+  ```
+ - Debug text: `Info: {infoOn}`
+
+Press button `B` and `C` to reset the generation counter
+- Debug text: `Generation reset`
+
 ### 'Move' mode
 Press button `A` and `C` to toggle FastMove, that causes the cursor to move in large steps  
 
