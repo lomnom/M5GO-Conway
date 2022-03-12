@@ -43,7 +43,7 @@ Press button `A` and `C` to toggle FastMove, that causes the cursor to move in l
 Press button `C` to turn the cursor direction 90 degrees clockwise   
 - Debug text: `Direction: {cursorDirection}`   
 
-Press button `A` to advance the cursor by 1 cell, or 75% of the screen, if FastMove is enabled.  
+Press button `A` to advance the cursor by 1 cell, or 1/5 of the screen, if FastMove is enabled.  
 - Debug text: `Direction: {cursorDirection}`  
 
 ### 'Zoom' mode
