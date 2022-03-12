@@ -176,13 +176,6 @@ def cellsIter(file):
 
 cogol=Conway()
 
-try:
-  for x,y in cellsIter("pattern"):
-    cogol.grid[x:y]=True
-except OSError:
-  for x,y in ((-1,0),(0,0),(1,0)):
-    cogol.grid[x:y]=True
-
 MOVE=0
 ZOOM=1
 SET=2
@@ -197,6 +190,20 @@ x = -floor((WIDTH/2)/zoom) #center the center of the board
 y = -floor((HEIGHT/2)/zoom)
 
 info=False
+
+try:
+  maxX=0
+  maxY=0
+  for x,y in cellsIter("pattern"):
+    cogol.grid[x:y]=True
+    if x>maxX: maxX=x
+    if y>maxY: maxY=y
+  
+  x=floor((maxX/2)-(WIDTH/zoom/2))
+  y=floor((maxY/2)-(HEIGHT/zoom/2))
+except OSError:
+  for x,y in ((-1,0),(0,0),(1,0)):
+    cogol.grid[x:y]=True
 
 def text(txt):
   lcd.clear(BLACK)
