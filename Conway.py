@@ -19,9 +19,9 @@ lcd.clear(BLACK)
 class InfGrid: #infinite grid of 2-states
   def __init__(self,grid=None):
     grid=grid if grid else {}
-    self.grid=grid # dict{set{int}}
+    self.grid=grid # dict{int:set{int}}
     
-  def __getitem__(self,index):
+  def __getitem__(self,index): #slice(x,y,None)
     x=index.start
     y=index.stop
     if y in self.grid:
@@ -74,33 +74,20 @@ class Conway: #representation of conway's game of life
   
   def tick(self): #advance the generation
     del self.oldGrid
+    #Implementing a cache for items to tick just made the device run out of ram
+    #Putting a limit on the cache made the algorithm slower than the original
+    #This is optimal.
     newGrid=InfGrid()
-    toTick=set()
     sides=((1,1),(0,1),(-1,1),(1,0),(-1,0),(1,-1),(0,-1),(-1,-1))
     
-    gridIterator=self.grid.__iter__()
-    iterating=True
-    
-    while iterating:
-      cells=0
-      
-      try: #proccess only 30 cells and the cells around, to save ram
-        while cells!=30:
-          xP,yP=next(gridIterator)
-          for xO,yO in sides: #iterate through cells directly around current processing
-            toTick.add((xP+xO,yP+yO))
-          toTick.add((xP,yP))
-          cells+=1
-      except StopIteration:
-        iterating=False
-        
-      for x,y in toTick: #stimulate every cell that needs to be stimulated
+    for gx,gy in self.grid:
+      for ox,oy in sides:
+        x,y=gx+ox,gy+oy
         besideN=self.neighbours(x,y)
         if (besideN==3 or besideN==2) and self.grid[x:y]:
           newGrid[x:y]=True 
         elif besideN==3 and not self.grid[x:y]:
           newGrid[x:y]=True
-      toTick=set()
     
     self.oldGrid=self.grid
     self.grid=newGrid
@@ -139,17 +126,8 @@ class Conway: #representation of conway's game of life
 
 cogol=Conway()
 
-#glider
-# cogol.grid[0:-1]=True
-# cogol.grid[-1:-1]=True
-# cogol.grid[1:-1]=True
-# cogol.grid[1:0]=True
-# cogol.grid[0:1]=True
-
-#blinker
-cogol.grid[0:0]=True
-cogol.grid[1:0]=True
-cogol.grid[-1:0]=True
+for x,y in ((-1,0),(0,0),(1,0)):
+  cogol.grid[x:y]=True
 
 MOVE=0
 ZOOM=1
@@ -199,7 +177,11 @@ while True:
   if zoom==1:
     lcd.pixel(midSqMX*zoom,midSqMY*zoom,RED)
   
-  time.sleep_ms(100-(time.ticks_ms()-tickstartms)) #make every frame 100ms
+  ctime=time.ticks_ms()
+  if ctime>tickstartms: #overfflow check
+    time.sleep_ms(100-(time.ticks_ms()-tickstartms)) #make every frame 100ms
+  else:
+    time.sleep_ms(100)
 
   btnBpressed=btnB.wasPressed()
   btnCpressed=btnC.wasPressed()
