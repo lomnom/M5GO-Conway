@@ -76,7 +76,7 @@ class Conway: #representation of conway's game of life
     newSetCache=[]
     
     prevRow=None
-    for row in rawGrid:
+    for row in sorted(rawGrid):
       cacheUnshared=(row-prevRow if not prevRow is None else 69)
       newCacheUnshared=(cacheUnshared if cacheUnshared<=3 else 3)
       cacheUnshared=(cacheUnshared if cacheUnshared<=5 else 5)
