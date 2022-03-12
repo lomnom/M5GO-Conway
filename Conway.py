@@ -236,6 +236,7 @@ while True:
     text("Info: "+str(info))
   elif btnCpressed and btnBpressed:
     cogol.generation=0
+    text("Generation reset")
   elif btnBpressed: #change mode
     mode+=1
     mode=mode%NMODES
