@@ -62,36 +62,57 @@ class Conway: #representation of conway's game of life
     self.grid=InfGrid()
     self.oldGrid=InfGrid()
   
-  def neighbours(self,x,y): #get neighbours of a cell
-    n=0
-    rawGrid=self.grid.rawgrid
-    row=rawGrid.get(y+1)
-    if row:
-      n+= (x+1 in row)+(x in row)+(x-1 in row)
-    row=rawGrid.get(y)
-    if row:
-      n+= (x+1 in row)+(x-1 in row)
-    row=rawGrid.get(y-1)
-    if row:
-      n+= (x+1 in row)+(x in row)+(x-1 in row)
-    return n
-  
   def tick(self): #advance the generation
     del self.oldGrid
     #Implementing a cache for items to tick just made the device run out of ram
     #Putting a limit on the cache made the algorithm slower than the original
     #This is optimal.
     newGrid=InfGrid()
+    rawGrid=self.grid.rawgrid
+    rawNewGrid=newGrid.rawgrid
     sides=((1,1),(0,1),(-1,1),(1,0),(-1,0),(1,-1),(0,-1),(-1,-1))
     
-    for gx,gy in self.grid:
-      for ox,oy in sides:
-        x,y=gx+ox,gy+oy
-        besideN=self.neighbours(x,y)
-        if (besideN==3 or besideN==2) and self.grid[x:y]:
-          newGrid[x:y]=True 
-        elif besideN==3 and not self.grid[x:y]:
-          newGrid[x:y]=True
+    rowSetCache=[]
+    newSetCache=[]
+    
+    prevRow=None
+    for row in rawGrid:
+      cacheUnshared=(row-prevRow if not prevRow is None else 69)
+      newCacheUnshared=(cacheUnshared if cacheUnshared<=3 else 3)
+      cacheUnshared=(cacheUnshared if cacheUnshared<=5 else 5)
+      rowSetCache=rowSetCache[cacheUnshared:]
+      newSetCache=newSetCache[newCacheUnshared:]
+      rowSetCache+=[rawGrid.get(row+n) for n in range((3-cacheUnshared),3)]
+      newSetCache+=[rawNewGrid.get(row+n) for n in range((2-newCacheUnshared),2)]
+      for col in rowSetCache[2]:
+        for ox,oy in sides:
+          x,y=col+ox,row+oy
+          rowSet=rowSetCache[2+oy]
+          rowUpSet=rowSetCache[3+oy]
+          rowDownSet=rowSetCache[1+oy]
+          
+          beside=0
+          if rowUpSet:
+            beside+= (x+1 in rowUpSet)+(x in rowUpSet)+(x-1 in rowUpSet)
+          if rowSet:
+            beside+= (x+1 in rowSet)+(x-1 in rowSet)
+          if beside<4 and rowDownSet:
+            beside+= (x+1 in rowDownSet)+(x in rowDownSet)+(x-1 in rowDownSet)
+          
+          currNewRow=newSetCache[1+oy]
+          selfExists=rowSet and x in rowSet
+          add=False
+          if beside==3:
+            add=True
+          elif beside==2 and rowSet and x in rowSet:
+            add=True
+          
+          if add:
+            if not currNewRow:
+              currNewRow=set()
+              newSetCache[1+oy]=currNewRow
+              rawNewGrid[y]=currNewRow
+            currNewRow.add(x)
     
     self.oldGrid=self.grid
     self.grid=newGrid
