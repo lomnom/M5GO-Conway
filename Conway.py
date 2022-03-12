@@ -284,8 +284,8 @@ while True:
       text("State: "+("live" if not state else "dead"))
   elif btnApressed:
     if mode==MOVE: #advance cursor
-      x+=direction[0] * (1 if not fastMove else ceil(midSqMX*0.75))
-      y+=direction[1] * (1 if not fastMove else ceil(midSqMY*0.75))
+      x+=direction[0] * (1 if not fastMove else ceil(midSqMX/5))
+      y+=direction[1] * (1 if not fastMove else ceil(midSqMY/5))
       text("Direction: "+directions[direction])
     elif mode==ZOOM: #decrease zoom
       zoom -= 1 if zoom > 1 else 0
