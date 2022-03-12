@@ -202,11 +202,19 @@ def text(txt):
   lcd.clear(BLACK)
   lcd.text(12,12,txt,RED)
 
+infoWidth=0
 def showInfo():
-  lcd.rect(0,HEIGHT-(TXTLINE*3),WIDTH,TXTLINE*2,BLACK,BLACK)
-  lcd.text(lcd.RIGHT,HEIGHT-TXTLINE,"X{} Y{}".format(x+midSqMX,y+midSqMY),RED)
-  lcd.text(lcd.RIGHT,HEIGHT-(TXTLINE*2),"Gen: "+str(cogol.generation),RED)
-  lcd.text(lcd.RIGHT,HEIGHT-(TXTLINE*3),str(ctime)+"ms",GREEN if ctime<100 else RED)
+  global infoWidth
+  lcd.rect(WIDTH-infoWidth,HEIGHT-(TXTLINE*3),infoWidth,TXTLINE*2,BLACK,BLACK)
+  infoWidth=[]
+  def showLine(text,n,color=RED):
+    global infoWidth
+    infoWidth+=[lcd.textWidth(text)]
+    lcd.text(lcd.RIGHT,HEIGHT-(TXTLINE*n),text,color)
+  showLine("X{} Y{}".format(x+midSqMX,y+midSqMY),1)
+  showLine("Gen: "+str(cogol.generation),2)
+  showLine(str(ctime)+"ms",3,color=GREEN if ctime<100 else RED)
+  infoWidth=max(infoWidth)
 
 direction=(0,-1)
 turn=lambda dir: (-dir[1],dir[0])
