@@ -10,9 +10,12 @@ BLACK=0x000000
 
 CYAN=0x00FFFF
 RED=0xFF0000
+GREEN=0x00FF00
 
 HEIGHT=240
 WIDTH=320
+
+TXTLINE=lcd.fontSize()[1]
 
 lcd.clear(BLACK)
 
@@ -61,6 +64,7 @@ class Conway: #representation of conway's game of life
   def __init__(self):
     self.grid=InfGrid()
     self.oldGrid=InfGrid()
+    self.generation=0
   
   def tick(self): #advance the generation
     del self.oldGrid
@@ -116,6 +120,7 @@ class Conway: #representation of conway's game of life
     
     self.oldGrid=self.grid
     self.grid=newGrid
+    self.generation+=1
   
   #   x: top left x of matrix in rendered 
   #   y: top left y of matrix in rendered
@@ -167,9 +172,17 @@ zoom=6
 x = -floor((WIDTH/2)/zoom) #center the center of the board
 y = -floor((HEIGHT/2)/zoom)
 
+info=False
+
 def text(txt):
   lcd.clear(BLACK)
   lcd.text(12,12,txt,RED)
+
+def showInfo():
+  lcd.rect(0,HEIGHT-(TXTLINE*3),WIDTH,TXTLINE*2,BLACK,BLACK)
+  lcd.text(lcd.RIGHT,HEIGHT-TXTLINE,"X{} Y{}".format(x+midSqMX,y+midSqMY),RED)
+  lcd.text(lcd.RIGHT,HEIGHT-(TXTLINE*2),"Gen: "+str(cogol.generation),RED)
+  lcd.text(lcd.RIGHT,HEIGHT-(TXTLINE*3),str(ctime)+"ms",GREEN if ctime<100 else RED)
 
 direction=(0,-1)
 turn=lambda dir: (-dir[1],dir[0])
@@ -193,6 +206,9 @@ while True:
   midSqMY=floor(HEIGHT/2/zoom)
   tickstartms=time.ticks_ms()
   
+  if info:
+    showInfo()
+    
   cogol.showGrid(x,y,zoom)
   if mode!=SET and not paused:
     cogol.tick()
@@ -202,9 +218,9 @@ while True:
   if zoom==1:
     lcd.pixel(midSqMX*zoom,midSqMY*zoom,RED)
   
-  ctime=time.ticks_ms()
+  ctime=time.ticks_ms()-tickstartms
   if ctime>tickstartms: #overfflow check
-    time.sleep_ms(100-(time.ticks_ms()-tickstartms)) #make every frame 100ms
+    time.sleep_ms(100-ctime) #make every frame 100ms
   else:
     time.sleep_ms(100)
 
@@ -215,6 +231,11 @@ while True:
   if btnApressed and btnBpressed and btnCpressed: #pause
     paused=not paused
     text("Paused: "+str(paused))
+  elif btnApressed and btnBpressed:
+    info=not info
+    text("Info: "+str(info))
+  elif btnCpressed and btnBpressed:
+    cogol.generation=0
   elif btnBpressed: #change mode
     mode+=1
     mode=mode%NMODES
