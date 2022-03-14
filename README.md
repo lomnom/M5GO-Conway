@@ -26,7 +26,7 @@ Press button `A`, `B` and `C` together
 
 ### Extra info text
 Press button `A` and `B` together to toggle extra info text  
-- Extra info at bottom left
+- Extra info at bottom right
   ```
   {ms}ms
   Gen: {generation}
