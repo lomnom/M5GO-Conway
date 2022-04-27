@@ -68,12 +68,16 @@ class Conway: #representation of conway's game of life
     self.grid=InfGrid()
     self.oldGrid=InfGrid()
     self.generation=0
+    self.population=0
+    self.oldPopulation=0
   
   def tick(self): #advance the generation
     del self.oldGrid
     #Implementing a cache for items to tick just made the device run out of ram
     #Putting a limit on the cache made the algorithm slower than the original
     #This is optimal.
+    self.oldPopulation=self.population
+    self.population=0
     newGrid=InfGrid()
     rawGrid=self.grid.rawgrid
     rawNewGrid=newGrid.rawgrid
@@ -115,6 +119,7 @@ class Conway: #representation of conway's game of life
               newSetCache[1+oy]=currNewRow
               rawNewGrid[y]=currNewRow
             currNewRow.add(x)
+            self.population+=1
     
     self.oldGrid=self.grid
     self.grid=newGrid
@@ -219,9 +224,10 @@ def showInfo():
     infoWidth+=[lcd.textWidth(text)]
     lcd.text(lcd.RIGHT,HEIGHT-(TXTLINE*n),text,color)
   showLine("X{} Y{}".format(x+midSqMX,y+midSqMY),1)
-  showLine("Gen: "+str(cogol.generation),2)
+  showLine("Gen="+str(cogol.generation)+", Pop="+str(cogol.population),2)
   showLine(str(ctime)+"ms",3,color=GREEN if ctime<100 else RED)
-  showLine(str(round(gc.mem_free()/1000))+"kb",4)
+  free=round(gc.mem_free()/1000)
+  showLine(str(free)+"kb",4,color=GREEN if free>30 else RED)
   infoWidth=max(infoWidth)
 
 direction=(0,-1)
