@@ -28,6 +28,7 @@ Press button `A`, `B` and `C` together
 Press button `A` and `B` together to toggle extra info text  
 - Extra info at bottom right
   ```
+  {kb free}kb
   {ms}ms
   Gen: {generation}
   X{xCoord} Y{yCoord}
