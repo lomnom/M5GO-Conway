@@ -1,7 +1,10 @@
 from m5stack import *
+import gc
 
 ceil=lambda n: round(n+0.5)
 floor=lambda n: round(n-0.5)
+
+lcd.font(lcd.FONT_DefaultSmall)
 
 #some constants
 WHITE=0xFFFFFF
@@ -91,6 +94,9 @@ class Conway: #representation of conway's game of life
       for col in rowSetCache[2]:
         for ox,oy in sides:
           x,y=col+ox,row+oy
+          currNewRow=newSetCache[1+oy]
+          if currNewRow and x in currNewRow: continue
+
           rowSet=rowSetCache[2+oy]
           rowUpSet=rowSetCache[3+oy]
           rowDownSet=rowSetCache[1+oy]
@@ -103,15 +109,7 @@ class Conway: #representation of conway's game of life
           if beside<4 and rowDownSet:
             beside+= (x+1 in rowDownSet)+(x in rowDownSet)+(x-1 in rowDownSet)
           
-          currNewRow=newSetCache[1+oy]
-          selfExists=rowSet and x in rowSet
-          add=False
-          if beside==3:
-            add=True
-          elif beside==2 and rowSet and x in rowSet:
-            add=True
-          
-          if add:
+          if beside==3 or (beside==2 and rowSet and x in rowSet):
             if not currNewRow:
               currNewRow=set()
               newSetCache[1+oy]=currNewRow
@@ -153,7 +151,7 @@ class Conway: #representation of conway's game of life
         for item in oldRowSet: 
           if rEndX>=item>=x and not (rowSet and item in rowSet):
             rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
-
+            
 def cellsIter(file):
   file=open("/sd/{}.cells".format(file),"r")
   line=file.readline()
@@ -204,15 +202,17 @@ try:
 except OSError:
   for x,y in ((-1,0),(0,0),(1,0)):
     cogol.grid[x:y]=True
+  x=floor((3/2)-(WIDTH/zoom/2))
+  y=floor((1/2)-(HEIGHT/zoom/2))
 
-def text(txt):
-  lcd.clear(BLACK)
+def text(txt,clear=False):
+  lcd.rect(12,12,WIDTH,TXTLINE,BLACK,BLACK) if not clear else lcd.clear()
   lcd.text(12,12,txt,RED)
 
 infoWidth=0
 def showInfo():
   global infoWidth
-  lcd.rect(WIDTH-infoWidth,HEIGHT-(TXTLINE*3),infoWidth,TXTLINE*2,BLACK,BLACK)
+  lcd.rect(WIDTH-infoWidth,HEIGHT-(TXTLINE*4),infoWidth,TXTLINE*4,BLACK,BLACK)
   infoWidth=[]
   def showLine(text,n,color=RED):
     global infoWidth
@@ -221,6 +221,7 @@ def showInfo():
   showLine("X{} Y{}".format(x+midSqMX,y+midSqMY),1)
   showLine("Gen: "+str(cogol.generation),2)
   showLine(str(ctime)+"ms",3,color=GREEN if ctime<100 else RED)
+  showLine(str(round(gc.mem_free()/1000))+"kb",4)
   infoWidth=max(infoWidth)
 
 direction=(0,-1)
@@ -236,11 +237,13 @@ directions={
   (-1,0):"left"
 }
 
-text("mode: move")
+text("mode: move",clear=True)
 
 import utime as time
 
 while True:
+  gc.collect()
+  
   midSqMX=floor(WIDTH/2/zoom) # difference between x and x of in the middle of screen
   midSqMY=floor(HEIGHT/2/zoom)
   tickstartms=time.ticks_ms()
@@ -249,6 +252,7 @@ while True:
     showInfo()
     
   cogol.showGrid(x,y,zoom)
+  
   if mode!=SET and not paused:
     cogol.tick()
     
@@ -272,7 +276,7 @@ while True:
     text("Paused: "+str(paused))
   elif btnApressed and btnBpressed:
     info=not info
-    text("Info: "+str(info))
+    text("Info: "+str(info),clear=True)
   elif btnCpressed and btnBpressed:
     cogol.generation=0
     text("Generation reset")
@@ -293,18 +297,18 @@ while True:
     if mode==MOVE: #advance cursor
       x+=direction[0] * (1 if not fastMove else ceil(midSqMX/5))
       y+=direction[1] * (1 if not fastMove else ceil(midSqMY/5))
-      text("Direction: "+directions[direction])
+      text("Direction: "+directions[direction],clear=True)
     elif mode==ZOOM: #decrease zoom
       zoom -= 1 if zoom > 1 else 0
       newMidSqMX=floor(WIDTH/2/zoom) #center what was previusly centered before the zoom
       newMidSqMY=floor(HEIGHT/2/zoom)
       x-= newMidSqMX-midSqMX
       y-= newMidSqMY-midSqMY
-      text("zoom: "+str(zoom))
+      text("zoom: "+str(zoom),clear=True)
     elif mode==SET: #advance cursor in set mode
       x+=direction[0]
       y+=direction[1]
-      text("Direction: "+directions[direction])
+      text("Direction: "+directions[direction],clear=True)
   elif btnCpressed:
     if mode==MOVE or mode==SET: #change direction
       direction=turn(direction)
@@ -315,5 +319,4 @@ while True:
       newMidSqMY=floor(HEIGHT/2/zoom)
       x-= newMidSqMX-midSqMX
       y-= newMidSqMY-midSqMY
-      text("zoom: "+str(zoom))
-      
+      text("zoom: "+str(zoom),clear=True)
