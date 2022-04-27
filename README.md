@@ -30,7 +30,7 @@ Press button `A` and `B` together to toggle extra info text
   ```
   {kb free}kb
   {ms}ms
-  Gen: {generation}
+  Gen={generation}, Pop={population}
   X{xCoord} Y{yCoord}
   ```
  - Debug text: `Info: {infoOn}`
