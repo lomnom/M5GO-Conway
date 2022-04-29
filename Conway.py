@@ -1,5 +1,6 @@
 from m5stack import *
 import gc
+import uos
 
 ceil=lambda n: round(n+0.5)
 floor=lambda n: round(n-0.5)
@@ -158,7 +159,7 @@ class Conway: #representation of conway's game of life
             rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
             
 def cellsIter(file):
-  file=open("/sd/{}.cells".format(file),"r")
+  file=open("/sd/{}".format(file),"r")
   line=file.readline()
   while line[0]=="!":
     line=file.readline()
@@ -194,17 +195,29 @@ y = -floor((HEIGHT/2)/zoom)
 
 info=False
 
-try:
-  maxX=0
-  maxY=0
-  for x,y in cellsIter("pattern"):
-    cogol.grid[x:y]=True
-    if x>maxX: maxX=x
-    if y>maxY: maxY=y
-  
-  x=floor((maxX/2)-(WIDTH/zoom/2))
-  y=floor((maxY/2)-(HEIGHT/zoom/2))
-except OSError:
+patFiles=list(filter(
+  lambda name: name.endswith(".cells"),
+  uos.listdir("/sd/")
+))
+if patFiles:
+  pos,maxY,maxX=0,0,0
+  while True:
+    lcd.clear()
+    lcd.text(lcd.CENTER,lcd.CENTER,patFiles[pos],WHITE)
+    if btnA.wasPressed():
+      pos=(pos-1)%len(patFiles)
+    elif btnC.wasPressed():
+      pos=(pos+1)%len(patFiles)
+    elif btnB.wasPressed():
+      for x,y in cellsIter(patFiles[pos]):
+        cogol.grid[x:y]=True
+        if x>maxX: maxX=x
+        if y>maxY: maxY=y
+      x=floor((maxX/2)-(WIDTH/zoom/2))
+      y=floor((maxY/2)-(HEIGHT/zoom/2))
+      
+      break
+else:
   for x,y in ((-1,0),(0,0),(1,0)):
     cogol.grid[x:y]=True
   x=floor((3/2)-(WIDTH/zoom/2))
