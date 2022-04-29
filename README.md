@@ -65,5 +65,9 @@ Press button `C` to turn the cursor direction 90 degrees clockwise
 Press button `A` to advance the cursor by 1 cell
 - Debug text: `Direction: {cursorDirection}`
 
-### Load .cells file
-Place the file in the root directory of the sd card, as `pattern.cells`
+### Sd card
+If a sd card is in the M5GO, a menu will appear at the start of the program, allowing you to select the `.cells` files.
+
+Press button `A` and `C` to move the selection left and right.
+
+Press button `B` to load file.
