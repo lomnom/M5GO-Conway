@@ -158,7 +158,10 @@ class Conway: #representation of conway's game of life
             if rEndX>=item>=x:
               rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
         else:
-          rect(0,posY,WIDTH,zoom,cleared,cleared)
+          if zoom!=1:
+            rect(0,posY,WIDTH,zoom,cleared,cleared) 
+          else:
+            lcd.line(0,posY,WIDTH,posY,cleared)
             
 def cellsIter(file):
   file=open("/sd/{}".format(file),"r")
