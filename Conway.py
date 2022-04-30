@@ -144,19 +144,21 @@ class Conway: #representation of conway's game of life
       rect=lambda x,y,w,h,b,color: lcd.pixel(x,y,color)
     
     for row in range(y,rEndY+1):
+      posY=(row-y)*zoom # y coord to draw squares
       rowSet=rawGrid.get(row)
       if rowSet:
-        posY=(row-y)*zoom #y coordinate to draw squares
         for item in rowSet:
           if rEndX>=item>=x:
             rect((item-x)*zoom,posY,zoom,zoom,border,color) #render item if within viewport
       
       oldRowSet=rawOldGrid.get(row)
       if oldRowSet: #remove old filled items
-        posY=(row-y)*zoom
-        for item in oldRowSet: 
-          if rEndX>=item>=x and not (rowSet and item in rowSet):
-            rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
+        if rowSet:
+          for item in oldRowSet-rowSet: 
+            if rEndX>=item>=x:
+              rect((item-x)*zoom,posY,zoom,zoom,cleared,cleared) #clear old items
+        else:
+          rect(0,posY,WIDTH,zoom,cleared,cleared)
             
 def cellsIter(file):
   file=open("/sd/{}".format(file),"r")
